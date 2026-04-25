@@ -1,159 +1,358 @@
-import { useState, useMemo } from "react";
-import { Link } from "wouter";
-import { games } from "@/data/games";
-import { GameCard } from "@/components/ui/GameCard";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Filter, SortDesc, List, Grid } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useEffect, useMemo, useState } from "react";
+import { useSearch, useLocation } from "wouter";
 import { motion } from "framer-motion";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Library,
+  Search as SearchIcon,
+  X,
+  ArrowDownAZ,
+  Calendar,
+  Star,
+  TrendingUp,
+} from "lucide-react";
+import { useListGames, useListGenres, useListPlatforms } from "@workspace/api-client-react";
+import { GameCard, GameCardSkeleton } from "@/components/ui/GameCard";
+
+const ORDERING_OPTIONS: { value: string; label: string; icon: any }[] = [
+  { value: "-added", label: "Most popular", icon: TrendingUp },
+  { value: "-released", label: "Newest first", icon: Calendar },
+  { value: "released", label: "Oldest first", icon: Calendar },
+  { value: "-rating", label: "User rating", icon: Star },
+  { value: "-metacritic", label: "Metacritic", icon: Star },
+  { value: "name", label: "A → Z", icon: ArrowDownAZ },
+];
+
+function useQueryState() {
+  const search = useSearch();
+  const [, setLocation] = useLocation();
+  const params = useMemo(() => new URLSearchParams(search), [search]);
+
+  const setParams = (updates: Record<string, string | undefined>) => {
+    const next = new URLSearchParams(search);
+    for (const [k, v] of Object.entries(updates)) {
+      if (v === undefined || v === "") next.delete(k);
+      else next.set(k, v);
+    }
+    next.delete("page");
+    setLocation(`/browse${next.toString() ? "?" + next.toString() : ""}`);
+  };
+
+  const setPage = (page: number) => {
+    const next = new URLSearchParams(search);
+    if (page <= 1) next.delete("page");
+    else next.set("page", String(page));
+    setLocation(`/browse${next.toString() ? "?" + next.toString() : ""}`);
+  };
+
+  return { params, setParams, setPage };
+}
 
 export default function Browse() {
-  const [search, setSearch] = useState("");
-  const [genreFilter, setGenreFilter] = useState("all");
-  const [sortOrder, setSortOrder] = useState("score-desc");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  useEffect(() => {
+    document.title = "Browse the library — GameVerse";
+  }, []);
 
-  const genres = ["all", ...Array.from(new Set(games.map(g => g.genre)))];
+  const { params, setParams, setPage } = useQueryState();
 
-  const filteredGames = useMemo(() => {
-    return games
-      .filter((game) => {
-        const matchesSearch = game.title.toLowerCase().includes(search.toLowerCase()) || 
-                              game.developer.toLowerCase().includes(search.toLowerCase());
-        const matchesGenre = genreFilter === "all" || game.genre === genreFilter;
-        return matchesSearch && matchesGenre;
-      })
-      .sort((a, b) => {
-        if (sortOrder === "score-desc") return b.scores.metacritic - a.scores.metacritic;
-        if (sortOrder === "year-desc") return b.year - a.year;
-        if (sortOrder === "alpha-asc") return a.title.localeCompare(b.title);
-        return 0;
-      });
-  }, [search, genreFilter, sortOrder]);
+  const search = params.get("search") ?? "";
+  const genre = params.get("genres") ?? "";
+  const platform = params.get("platforms") ?? "";
+  const dates = params.get("dates") ?? "";
+  const ordering = params.get("ordering") ?? "-added";
+  const page = parseInt(params.get("page") ?? "1", 10);
+
+  const [searchInput, setSearchInput] = useState(search);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  useEffect(() => setSearchInput(search), [search]);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (searchInput.trim() !== search) {
+        setParams({ search: searchInput.trim() || undefined });
+      }
+    }, 350);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
+  const genres = useListGenres();
+  const platforms = useListPlatforms();
+  const games = useListGames({
+    search: search || undefined,
+    genres: genre || undefined,
+    platforms: platform || undefined,
+    dates: dates || undefined,
+    ordering,
+    page,
+    pageSize: 24,
+  });
+
+  const totalPages = games.data ? Math.min(Math.ceil(games.data.count / 24), 50) : 1;
+
+  const yearOptions = useMemo(() => {
+    const current = new Date().getFullYear();
+    const years: { value: string; label: string }[] = [];
+    for (let y = current; y >= 1995; y -= 1) {
+      years.push({ value: `${y}-01-01,${y}-12-31`, label: String(y) });
+    }
+    return years;
+  }, []);
+
+  const activeFilters = [genre, platform, dates].filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-20">
-      <div className="w-full max-w-[1400px] mx-auto px-6 md:px-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-          <div>
-            <h1 className="text-4xl font-black mb-2">Browse Library</h1>
-            <p className="text-muted-foreground">Explore {games.length} curated wikis in the GameVerse.</p>
+    <div className="pt-24 pb-24 max-w-7xl mx-auto px-4 sm:px-6 md:px-10">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+        <div>
+          <div className="text-[11px] uppercase tracking-[0.18em] text-primary font-bold mb-2 flex items-center gap-2">
+            <Library size={12} strokeWidth={2.5} />
+            The catalog
           </div>
-          
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative w-full md:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input 
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search titles, developers..." 
-                className="pl-9 bg-surface border-border2"
-              />
-            </div>
-            
-            <Select value={genreFilter} onValueChange={setGenreFilter}>
-              <SelectTrigger className="w-[140px] bg-surface border-border2">
-                <Filter className="w-4 h-4 mr-2 text-muted-foreground" />
-                <SelectValue placeholder="Genre" />
-              </SelectTrigger>
-              <SelectContent>
-                {genres.map(g => (
-                  <SelectItem key={g} value={g} className="capitalize">
-                    {g === "all" ? "All Genres" : g}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={sortOrder} onValueChange={setSortOrder}>
-              <SelectTrigger className="w-[160px] bg-surface border-border2">
-                <SortDesc className="w-4 h-4 mr-2 text-muted-foreground" />
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="score-desc">Highest Rated</SelectItem>
-                <SelectItem value="year-desc">Newest First</SelectItem>
-                <SelectItem value="alpha-asc">Alphabetical</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <div className="flex items-center bg-surface border border-border2 rounded-md p-1">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className={`h-8 w-8 rounded ${viewMode === 'grid' ? 'bg-surface3 text-white' : 'text-muted-foreground'}`}
-                onClick={() => setViewMode("grid")}
-              >
-                <Grid size={16} />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className={`h-8 w-8 rounded ${viewMode === 'list' ? 'bg-surface3 text-white' : 'text-muted-foreground'}`}
-                onClick={() => setViewMode("list")}
-              >
-                <List size={16} />
-              </Button>
-            </div>
-          </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+            Browse the library
+          </h1>
+          <p className="text-sm text-muted mt-2 max-w-xl">
+            {games.data
+              ? `${games.data.count.toLocaleString()} games matching your filters`
+              : "Loading the catalog…"}
+          </p>
         </div>
 
-        {filteredGames.length === 0 ? (
-          <div className="text-center py-20 bg-surface border border-border2 rounded-2xl">
-            <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-bold mb-2">No games found</h3>
-            <p className="text-muted-foreground">Try adjusting your filters or search query.</p>
-            <Button variant="outline" className="mt-4" onClick={() => { setSearch(""); setGenreFilter("all"); }}>
-              Clear Filters
-            </Button>
-          </div>
-        ) : (
-          <div className={
-            viewMode === 'grid' 
-              ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
-              : "flex flex-col gap-4"
-          }>
-            {filteredGames.map((game, i) => (
-              <motion.div
-                key={game.slug}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.4 }}
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="relative flex-1 md:w-72">
+            <SearchIcon
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted"
+            />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search games..."
+              className="w-full bg-surface2 border border-border rounded-xl h-10 pl-9 pr-9 text-sm placeholder:text-muted focus:outline-none focus:border-primary transition-colors"
+              data-testid="input-search-games"
+            />
+            {searchInput && (
+              <button
+                onClick={() => setSearchInput("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white"
               >
-                {viewMode === 'grid' ? (
-                  <GameCard game={game} />
-                ) : (
-                  <Link href={`/wiki/${game.slug}`}>
-                    <div className="flex items-center gap-6 p-4 rounded-xl bg-surface border border-border2 hover:border-primary transition-colors cursor-pointer group">
-                      <img src={game.coverUrl} alt={game.title} className="w-16 h-24 rounded object-cover" />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-1">
-                          <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{game.title}</h3>
-                          <span className="text-xs bg-surface2 px-2 py-0.5 rounded text-muted-foreground">{game.year}</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">{game.developer}</p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold px-2 py-1 rounded bg-primary/20 text-primary">
-                            {game.scores.metacritic}
-                          </span>
-                          <span className="text-xs text-muted-foreground">{game.genre}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                )}
-              </motion.div>
-            ))}
+                <X size={14} />
+              </button>
+            )}
           </div>
-        )}
+          <button
+            onClick={() => setFiltersOpen((v) => !v)}
+            className={`md:hidden h-10 px-3 rounded-xl border text-sm font-semibold flex items-center gap-2 ${
+              activeFilters
+                ? "border-primary text-primary bg-primary/10"
+                : "border-border bg-surface2 text-muted-foreground"
+            }`}
+            data-testid="button-filters"
+          >
+            <Filter size={14} />
+            {activeFilters > 0 && <span className="text-xs">{activeFilters}</span>}
+          </button>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-[260px_1fr] gap-6">
+        <aside
+          className={`${
+            filtersOpen ? "block" : "hidden md:block"
+          } space-y-6 bg-surface border border-border2 rounded-2xl p-5 h-fit md:sticky md:top-20`}
+        >
+          <FilterGroup label="Sort">
+            <div className="space-y-1">
+              {ORDERING_OPTIONS.map((opt) => {
+                const Icon = opt.icon;
+                const active = ordering === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => setParams({ ordering: opt.value })}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${
+                      active
+                        ? "bg-primary/15 text-primary"
+                        : "text-muted-foreground hover:text-white hover:bg-surface2"
+                    }`}
+                    data-testid={`order-${opt.value}`}
+                  >
+                    <Icon size={12} />
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup label="Year">
+            <select
+              value={dates}
+              onChange={(e) => setParams({ dates: e.target.value || undefined })}
+              className="w-full bg-surface2 border border-border rounded-lg h-9 px-3 text-xs font-semibold text-white focus:outline-none focus:border-primary"
+              data-testid="select-year"
+            >
+              <option value="">Any year</option>
+              {yearOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </FilterGroup>
+
+          <FilterGroup label="Platform">
+            <div className="flex flex-wrap gap-1.5">
+              <FilterChip
+                active={!platform}
+                onClick={() => setParams({ platforms: undefined })}
+              >
+                All
+              </FilterChip>
+              {platforms.data?.results.map((p) => (
+                <FilterChip
+                  key={p.id}
+                  active={platform === String(p.id)}
+                  onClick={() => setParams({ platforms: String(p.id) })}
+                >
+                  {p.name}
+                </FilterChip>
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup label="Genre">
+            <div className="flex flex-wrap gap-1.5 max-h-72 overflow-y-auto pr-1">
+              <FilterChip
+                active={!genre}
+                onClick={() => setParams({ genres: undefined })}
+              >
+                All
+              </FilterChip>
+              {genres.data?.results.map((g) => (
+                <FilterChip
+                  key={g.id}
+                  active={genre === g.slug}
+                  onClick={() => setParams({ genres: g.slug })}
+                >
+                  {g.name}
+                </FilterChip>
+              ))}
+            </div>
+          </FilterGroup>
+
+          {activeFilters > 0 && (
+            <button
+              onClick={() =>
+                setParams({ genres: undefined, platforms: undefined, dates: undefined })
+              }
+              className="w-full text-xs font-semibold text-muted hover:text-primary transition-colors flex items-center justify-center gap-1.5 pt-2 border-t border-border2"
+            >
+              <X size={12} /> Clear filters
+            </button>
+          )}
+        </aside>
+
+        <div className="min-h-[60vh]">
+          {games.isError ? (
+            <div className="bg-surface border border-border2 rounded-2xl p-10 text-center">
+              <p className="text-sm text-muted-foreground mb-3">
+                We couldn't reach the catalog right now.
+              </p>
+              <button
+                onClick={() => games.refetch()}
+                className="text-xs font-semibold text-primary hover:underline"
+              >
+                Try again
+              </button>
+            </div>
+          ) : (
+            <>
+              <motion.div
+                key={`${ordering}-${genre}-${platform}-${dates}-${search}-${page}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+              >
+                {games.isLoading
+                  ? Array.from({ length: 12 }).map((_, i) => <GameCardSkeleton key={i} />)
+                  : games.data?.results.map((g) => <GameCard key={g.id} game={g} />)}
+              </motion.div>
+
+              {!games.isLoading && games.data?.results.length === 0 && (
+                <div className="bg-surface border border-border2 rounded-2xl p-10 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    No games match those filters. Try widening your search.
+                  </p>
+                </div>
+              )}
+
+              {games.data && games.data.count > 24 && (
+                <div className="flex items-center justify-center gap-2 mt-10">
+                  <button
+                    onClick={() => setPage(page - 1)}
+                    disabled={page <= 1}
+                    className="h-10 w-10 rounded-xl bg-surface2 border border-border text-muted-foreground hover:text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+                    data-testid="button-prev-page"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <div className="text-xs font-semibold text-muted-foreground px-4">
+                    Page {page} of {totalPages.toLocaleString()}
+                  </div>
+                  <button
+                    onClick={() => setPage(page + 1)}
+                    disabled={!games.data.next || page >= totalPages}
+                    className="h-10 w-10 rounded-xl bg-surface2 border border-border text-muted-foreground hover:text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+                    data-testid="button-next-page"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
+  );
+}
+
+function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-[0.18em] text-muted2 font-bold mb-2">
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-2.5 py-1 text-xs font-semibold rounded-md border transition-colors ${
+        active
+          ? "bg-primary text-black border-primary"
+          : "bg-surface2 border-border text-muted-foreground hover:text-white hover:border-[#333]"
+      }`}
+    >
+      {children}
+    </button>
   );
 }

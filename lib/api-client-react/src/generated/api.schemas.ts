@@ -8,3 +8,255 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface Error {
+  error: string;
+}
+
+export interface NamedRef {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export interface PlatformRef {
+  platform: NamedRef;
+}
+
+export type GameSummaryShortScreenshotsItem = {
+  id: number;
+  image: string;
+};
+
+export interface GameSummary {
+  id: number;
+  slug: string;
+  name: string;
+  /** @nullable */
+  released?: string | null;
+  tba: boolean;
+  /** @nullable */
+  backgroundImage?: string | null;
+  rating: number;
+  ratingTop: number;
+  ratingsCount: number;
+  /** @nullable */
+  metacritic?: number | null;
+  /** @nullable */
+  playtime?: number | null;
+  genres: NamedRef[];
+  platforms: PlatformRef[];
+  parentPlatforms: PlatformRef[];
+  shortScreenshots?: GameSummaryShortScreenshotsItem[];
+  esrbRating?: NamedRef | null;
+}
+
+export interface GameList {
+  count: number;
+  /** @nullable */
+  next?: string | null;
+  /** @nullable */
+  previous?: string | null;
+  results: GameSummary[];
+}
+
+export interface SystemRequirements {
+  platform: string;
+  /** @nullable */
+  minimum?: string | null;
+  /** @nullable */
+  recommended?: string | null;
+}
+
+export type GameDetailStoresItem = {
+  id: number;
+  /** @nullable */
+  url?: string | null;
+  store: NamedRef;
+};
+
+export interface GameDetail {
+  id: number;
+  slug: string;
+  name: string;
+  /** @nullable */
+  nameOriginal?: string | null;
+  description: string;
+  descriptionRaw: string;
+  /** @nullable */
+  released?: string | null;
+  tba: boolean;
+  /** @nullable */
+  backgroundImage?: string | null;
+  /** @nullable */
+  backgroundImageAdditional?: string | null;
+  /** @nullable */
+  website?: string | null;
+  rating: number;
+  ratingTop: number;
+  ratingsCount: number;
+  /** @nullable */
+  metacritic?: number | null;
+  /** @nullable */
+  metacriticUrl?: string | null;
+  /** @nullable */
+  redditUrl?: string | null;
+  /** @nullable */
+  playtime?: number | null;
+  screenshotsCount: number;
+  moviesCount: number;
+  achievementsCount: number;
+  additionsCount: number;
+  gameSeriesCount: number;
+  developers: NamedRef[];
+  publishers: NamedRef[];
+  genres: NamedRef[];
+  tags: NamedRef[];
+  platforms: PlatformRef[];
+  parentPlatforms: PlatformRef[];
+  stores: GameDetailStoresItem[];
+  esrbRating?: NamedRef | null;
+  systemRequirements: SystemRequirements[];
+}
+
+export interface Screenshot {
+  id: number;
+  image: string;
+  /** @nullable */
+  width?: number | null;
+  /** @nullable */
+  height?: number | null;
+}
+
+export interface ScreenshotList {
+  count: number;
+  results: Screenshot[];
+}
+
+export interface DlcItem {
+  id: number;
+  slug: string;
+  name: string;
+  /** @nullable */
+  released?: string | null;
+  /** @nullable */
+  backgroundImage?: string | null;
+  rating: number;
+  /** @nullable */
+  metacritic?: number | null;
+}
+
+export interface DlcList {
+  count: number;
+  results: DlcItem[];
+}
+
+export interface Genre {
+  id: number;
+  name: string;
+  slug: string;
+  gamesCount?: number;
+  /** @nullable */
+  imageBackground?: string | null;
+}
+
+export interface GenreList {
+  results: Genre[];
+}
+
+export interface Platform {
+  id: number;
+  name: string;
+  slug: string;
+  gamesCount?: number;
+  /** @nullable */
+  imageBackground?: string | null;
+}
+
+export interface PlatformList {
+  results: Platform[];
+}
+
+export interface NewsItem {
+  id: string;
+  title: string;
+  link: string;
+  description: string;
+  source: string;
+  publishedAt: string;
+  /** @nullable */
+  image?: string | null;
+}
+
+export interface NewsList {
+  items: NewsItem[];
+}
+
+export type ListGamesParams = {
+  search?: string;
+  /**
+   * Comma-separated genre slugs
+   */
+  genres?: string;
+  /**
+   * Comma-separated parent platform ids (1=PC, 2=PlayStation, 3=Xbox, 7=Nintendo, etc.)
+   */
+  platforms?: string;
+  /**
+   * Date range yyyy-mm-dd,yyyy-mm-dd
+   */
+  dates?: string;
+  /**
+   * RAWG ordering, e.g. -released, -rating, -metacritic, -added, name
+   */
+  ordering?: string;
+  /**
+   * @minimum 1
+   */
+  page?: number;
+  /**
+   * @minimum 1
+   * @maximum 40
+   */
+  pageSize?: number;
+};
+
+export type GetTrendingGamesParams = {
+  /**
+   * @minimum 1
+   * @maximum 40
+   */
+  pageSize?: number;
+};
+
+export type GetNewReleasesParams = {
+  /**
+   * @minimum 1
+   * @maximum 40
+   */
+  pageSize?: number;
+};
+
+export type GetTopRatedGamesParams = {
+  /**
+   * @minimum 1
+   * @maximum 40
+   */
+  pageSize?: number;
+};
+
+export type GetUpcomingGamesParams = {
+  /**
+   * @minimum 1
+   * @maximum 40
+   */
+  pageSize?: number;
+};
+
+export type GetGamingNewsParams = {
+  /**
+   * @minimum 1
+   * @maximum 50
+   */
+  pageSize?: number;
+};

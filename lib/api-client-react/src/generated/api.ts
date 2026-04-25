@@ -13,7 +13,23 @@ import type {
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  DlcList,
+  Error,
+  GameDetail,
+  GameList,
+  GenreList,
+  GetGamingNewsParams,
+  GetNewReleasesParams,
+  GetTopRatedGamesParams,
+  GetTrendingGamesParams,
+  GetUpcomingGamesParams,
+  HealthStatus,
+  ListGamesParams,
+  NewsList,
+  PlatformList,
+  ScreenshotList,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
 import type { ErrorType } from "../custom-fetch";
@@ -92,6 +108,1076 @@ export function useHealthCheck<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getHealthCheckQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Search and filter games
+ */
+export const getListGamesUrl = (params?: ListGamesParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/games?${stringifiedParams}`
+    : `/api/games`;
+};
+
+export const listGames = async (
+  params?: ListGamesParams,
+  options?: RequestInit,
+): Promise<GameList> => {
+  return customFetch<GameList>(getListGamesUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListGamesQueryKey = (params?: ListGamesParams) => {
+  return [`/api/games`, ...(params ? [params] : [])] as const;
+};
+
+export const getListGamesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listGames>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListGamesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listGames>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListGamesQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listGames>>> = ({
+    signal,
+  }) => listGames(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listGames>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListGamesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listGames>>
+>;
+export type ListGamesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Search and filter games
+ */
+
+export function useListGames<
+  TData = Awaited<ReturnType<typeof listGames>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListGamesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listGames>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListGamesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Trending games right now
+ */
+export const getGetTrendingGamesUrl = (params?: GetTrendingGamesParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/games/trending?${stringifiedParams}`
+    : `/api/games/trending`;
+};
+
+export const getTrendingGames = async (
+  params?: GetTrendingGamesParams,
+  options?: RequestInit,
+): Promise<GameList> => {
+  return customFetch<GameList>(getGetTrendingGamesUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetTrendingGamesQueryKey = (
+  params?: GetTrendingGamesParams,
+) => {
+  return [`/api/games/trending`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetTrendingGamesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTrendingGames>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetTrendingGamesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getTrendingGames>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetTrendingGamesQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTrendingGames>>
+  > = ({ signal }) => getTrendingGames(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTrendingGames>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetTrendingGamesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTrendingGames>>
+>;
+export type GetTrendingGamesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Trending games right now
+ */
+
+export function useGetTrendingGames<
+  TData = Awaited<ReturnType<typeof getTrendingGames>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetTrendingGamesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getTrendingGames>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetTrendingGamesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Newly released games
+ */
+export const getGetNewReleasesUrl = (params?: GetNewReleasesParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/games/new-releases?${stringifiedParams}`
+    : `/api/games/new-releases`;
+};
+
+export const getNewReleases = async (
+  params?: GetNewReleasesParams,
+  options?: RequestInit,
+): Promise<GameList> => {
+  return customFetch<GameList>(getGetNewReleasesUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetNewReleasesQueryKey = (params?: GetNewReleasesParams) => {
+  return [`/api/games/new-releases`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetNewReleasesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getNewReleases>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetNewReleasesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNewReleases>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetNewReleasesQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNewReleases>>> = ({
+    signal,
+  }) => getNewReleases(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getNewReleases>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetNewReleasesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getNewReleases>>
+>;
+export type GetNewReleasesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Newly released games
+ */
+
+export function useGetNewReleases<
+  TData = Awaited<ReturnType<typeof getNewReleases>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetNewReleasesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNewReleases>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetNewReleasesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Top rated games of the current year
+ */
+export const getGetTopRatedGamesUrl = (params?: GetTopRatedGamesParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/games/top-rated?${stringifiedParams}`
+    : `/api/games/top-rated`;
+};
+
+export const getTopRatedGames = async (
+  params?: GetTopRatedGamesParams,
+  options?: RequestInit,
+): Promise<GameList> => {
+  return customFetch<GameList>(getGetTopRatedGamesUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetTopRatedGamesQueryKey = (
+  params?: GetTopRatedGamesParams,
+) => {
+  return [`/api/games/top-rated`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetTopRatedGamesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTopRatedGames>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetTopRatedGamesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getTopRatedGames>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetTopRatedGamesQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTopRatedGames>>
+  > = ({ signal }) => getTopRatedGames(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTopRatedGames>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetTopRatedGamesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTopRatedGames>>
+>;
+export type GetTopRatedGamesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Top rated games of the current year
+ */
+
+export function useGetTopRatedGames<
+  TData = Awaited<ReturnType<typeof getTopRatedGames>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetTopRatedGamesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getTopRatedGames>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetTopRatedGamesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Upcoming game releases
+ */
+export const getGetUpcomingGamesUrl = (params?: GetUpcomingGamesParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/games/upcoming?${stringifiedParams}`
+    : `/api/games/upcoming`;
+};
+
+export const getUpcomingGames = async (
+  params?: GetUpcomingGamesParams,
+  options?: RequestInit,
+): Promise<GameList> => {
+  return customFetch<GameList>(getGetUpcomingGamesUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetUpcomingGamesQueryKey = (
+  params?: GetUpcomingGamesParams,
+) => {
+  return [`/api/games/upcoming`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetUpcomingGamesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getUpcomingGames>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetUpcomingGamesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getUpcomingGames>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetUpcomingGamesQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getUpcomingGames>>
+  > = ({ signal }) => getUpcomingGames(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getUpcomingGames>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetUpcomingGamesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getUpcomingGames>>
+>;
+export type GetUpcomingGamesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Upcoming game releases
+ */
+
+export function useGetUpcomingGames<
+  TData = Awaited<ReturnType<typeof getUpcomingGames>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetUpcomingGamesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getUpcomingGames>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetUpcomingGamesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Full game detail page
+ */
+export const getGetGameDetailUrl = (slug: string) => {
+  return `/api/games/${slug}`;
+};
+
+export const getGameDetail = async (
+  slug: string,
+  options?: RequestInit,
+): Promise<GameDetail> => {
+  return customFetch<GameDetail>(getGetGameDetailUrl(slug), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetGameDetailQueryKey = (slug: string) => {
+  return [`/api/games/${slug}`] as const;
+};
+
+export const getGetGameDetailQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGameDetail>>,
+  TError = ErrorType<Error>,
+>(
+  slug: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGameDetail>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetGameDetailQueryKey(slug);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getGameDetail>>> = ({
+    signal,
+  }) => getGameDetail(slug, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!slug,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGameDetail>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGameDetailQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGameDetail>>
+>;
+export type GetGameDetailQueryError = ErrorType<Error>;
+
+/**
+ * @summary Full game detail page
+ */
+
+export function useGetGameDetail<
+  TData = Awaited<ReturnType<typeof getGameDetail>>,
+  TError = ErrorType<Error>,
+>(
+  slug: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGameDetail>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGameDetailQueryOptions(slug, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Screenshots for a game
+ */
+export const getGetGameScreenshotsUrl = (slug: string) => {
+  return `/api/games/${slug}/screenshots`;
+};
+
+export const getGameScreenshots = async (
+  slug: string,
+  options?: RequestInit,
+): Promise<ScreenshotList> => {
+  return customFetch<ScreenshotList>(getGetGameScreenshotsUrl(slug), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetGameScreenshotsQueryKey = (slug: string) => {
+  return [`/api/games/${slug}/screenshots`] as const;
+};
+
+export const getGetGameScreenshotsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGameScreenshots>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGameScreenshots>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGameScreenshotsQueryKey(slug);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGameScreenshots>>
+  > = ({ signal }) => getGameScreenshots(slug, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!slug,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGameScreenshots>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGameScreenshotsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGameScreenshots>>
+>;
+export type GetGameScreenshotsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Screenshots for a game
+ */
+
+export function useGetGameScreenshots<
+  TData = Awaited<ReturnType<typeof getGameScreenshots>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGameScreenshots>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGameScreenshotsQueryOptions(slug, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary DLC and expansions for a game
+ */
+export const getGetGameDlcsUrl = (slug: string) => {
+  return `/api/games/${slug}/dlcs`;
+};
+
+export const getGameDlcs = async (
+  slug: string,
+  options?: RequestInit,
+): Promise<DlcList> => {
+  return customFetch<DlcList>(getGetGameDlcsUrl(slug), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetGameDlcsQueryKey = (slug: string) => {
+  return [`/api/games/${slug}/dlcs`] as const;
+};
+
+export const getGetGameDlcsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGameDlcs>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGameDlcs>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetGameDlcsQueryKey(slug);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getGameDlcs>>> = ({
+    signal,
+  }) => getGameDlcs(slug, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!slug,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGameDlcs>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGameDlcsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGameDlcs>>
+>;
+export type GetGameDlcsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary DLC and expansions for a game
+ */
+
+export function useGetGameDlcs<
+  TData = Awaited<ReturnType<typeof getGameDlcs>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGameDlcs>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGameDlcsQueryOptions(slug, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Other games in the same series
+ */
+export const getGetGameSeriesUrl = (slug: string) => {
+  return `/api/games/${slug}/series`;
+};
+
+export const getGameSeries = async (
+  slug: string,
+  options?: RequestInit,
+): Promise<GameList> => {
+  return customFetch<GameList>(getGetGameSeriesUrl(slug), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetGameSeriesQueryKey = (slug: string) => {
+  return [`/api/games/${slug}/series`] as const;
+};
+
+export const getGetGameSeriesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGameSeries>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGameSeries>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetGameSeriesQueryKey(slug);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getGameSeries>>> = ({
+    signal,
+  }) => getGameSeries(slug, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!slug,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGameSeries>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGameSeriesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGameSeries>>
+>;
+export type GetGameSeriesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Other games in the same series
+ */
+
+export function useGetGameSeries<
+  TData = Awaited<ReturnType<typeof getGameSeries>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGameSeries>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGameSeriesQueryOptions(slug, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary All game genres
+ */
+export const getListGenresUrl = () => {
+  return `/api/genres`;
+};
+
+export const listGenres = async (options?: RequestInit): Promise<GenreList> => {
+  return customFetch<GenreList>(getListGenresUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListGenresQueryKey = () => {
+  return [`/api/genres`] as const;
+};
+
+export const getListGenresQueryOptions = <
+  TData = Awaited<ReturnType<typeof listGenres>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listGenres>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListGenresQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listGenres>>> = ({
+    signal,
+  }) => listGenres({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listGenres>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListGenresQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listGenres>>
+>;
+export type ListGenresQueryError = ErrorType<unknown>;
+
+/**
+ * @summary All game genres
+ */
+
+export function useListGenres<
+  TData = Awaited<ReturnType<typeof listGenres>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listGenres>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListGenresQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary All parent platforms
+ */
+export const getListPlatformsUrl = () => {
+  return `/api/platforms`;
+};
+
+export const listPlatforms = async (
+  options?: RequestInit,
+): Promise<PlatformList> => {
+  return customFetch<PlatformList>(getListPlatformsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListPlatformsQueryKey = () => {
+  return [`/api/platforms`] as const;
+};
+
+export const getListPlatformsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listPlatforms>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listPlatforms>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListPlatformsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listPlatforms>>> = ({
+    signal,
+  }) => listPlatforms({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listPlatforms>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListPlatformsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listPlatforms>>
+>;
+export type ListPlatformsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary All parent platforms
+ */
+
+export function useListPlatforms<
+  TData = Awaited<ReturnType<typeof listPlatforms>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listPlatforms>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListPlatformsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Latest gaming news headlines
+ */
+export const getGetGamingNewsUrl = (params?: GetGamingNewsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/news?${stringifiedParams}`
+    : `/api/news`;
+};
+
+export const getGamingNews = async (
+  params?: GetGamingNewsParams,
+  options?: RequestInit,
+): Promise<NewsList> => {
+  return customFetch<NewsList>(getGetGamingNewsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetGamingNewsQueryKey = (params?: GetGamingNewsParams) => {
+  return [`/api/news`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetGamingNewsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGamingNews>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetGamingNewsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGamingNews>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetGamingNewsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getGamingNews>>> = ({
+    signal,
+  }) => getGamingNews(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGamingNews>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGamingNewsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGamingNews>>
+>;
+export type GetGamingNewsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Latest gaming news headlines
+ */
+
+export function useGetGamingNews<
+  TData = Awaited<ReturnType<typeof getGamingNews>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetGamingNewsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGamingNews>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGamingNewsQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

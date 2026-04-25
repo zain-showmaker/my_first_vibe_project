@@ -6,4 +6,29 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./dlcItem";
+export * from "./dlcList";
+export * from "./error";
+export * from "./gameDetail";
+export * from "./gameDetailStoresItem";
+export * from "./gameList";
+export * from "./gameSummary";
+export * from "./gameSummaryShortScreenshotsItem";
+export * from "./genre";
+export * from "./genreList";
+export * from "./getGamingNewsParams";
+export * from "./getNewReleasesParams";
+export * from "./getTopRatedGamesParams";
+export * from "./getTrendingGamesParams";
+export * from "./getUpcomingGamesParams";
 export * from "./healthStatus";
+export * from "./listGamesParams";
+export * from "./namedRef";
+export * from "./newsItem";
+export * from "./newsList";
+export * from "./platform";
+export * from "./platformList";
+export * from "./platformRef";
+export * from "./screenshot";
+export * from "./screenshotList";
+export * from "./systemRequirements";

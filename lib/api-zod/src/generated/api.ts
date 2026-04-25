@@ -14,3 +14,687 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary Search and filter games
+ */
+
+export const listGamesQueryPageSizeMax = 40;
+
+export const ListGamesQueryParams = zod.object({
+  search: zod.coerce.string().optional(),
+  genres: zod.coerce
+    .string()
+    .optional()
+    .describe("Comma-separated genre slugs"),
+  platforms: zod.coerce
+    .string()
+    .optional()
+    .describe(
+      "Comma-separated parent platform ids (1=PC, 2=PlayStation, 3=Xbox, 7=Nintendo, etc.)",
+    ),
+  dates: zod.coerce
+    .string()
+    .optional()
+    .describe("Date range yyyy-mm-dd,yyyy-mm-dd"),
+  ordering: zod.coerce
+    .string()
+    .optional()
+    .describe(
+      "RAWG ordering, e.g. -released, -rating, -metacritic, -added, name",
+    ),
+  page: zod.coerce.number().min(1).optional(),
+  pageSize: zod.coerce
+    .number()
+    .min(1)
+    .max(listGamesQueryPageSizeMax)
+    .optional(),
+});
+
+export const ListGamesResponse = zod.object({
+  count: zod.number(),
+  next: zod.string().nullish(),
+  previous: zod.string().nullish(),
+  results: zod.array(
+    zod.object({
+      id: zod.number(),
+      slug: zod.string(),
+      name: zod.string(),
+      released: zod.string().nullish(),
+      tba: zod.boolean(),
+      backgroundImage: zod.string().nullish(),
+      rating: zod.number(),
+      ratingTop: zod.number(),
+      ratingsCount: zod.number(),
+      metacritic: zod.number().nullish(),
+      playtime: zod.number().nullish(),
+      genres: zod.array(
+        zod.object({
+          id: zod.number(),
+          name: zod.string(),
+          slug: zod.string(),
+        }),
+      ),
+      platforms: zod.array(
+        zod.object({
+          platform: zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+        }),
+      ),
+      parentPlatforms: zod.array(
+        zod.object({
+          platform: zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+        }),
+      ),
+      shortScreenshots: zod
+        .array(
+          zod.object({
+            id: zod.number(),
+            image: zod.string(),
+          }),
+        )
+        .optional(),
+      esrbRating: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
+});
+
+/**
+ * @summary Trending games right now
+ */
+export const getTrendingGamesQueryPageSizeMax = 40;
+
+export const GetTrendingGamesQueryParams = zod.object({
+  pageSize: zod.coerce
+    .number()
+    .min(1)
+    .max(getTrendingGamesQueryPageSizeMax)
+    .optional(),
+});
+
+export const GetTrendingGamesResponse = zod.object({
+  count: zod.number(),
+  next: zod.string().nullish(),
+  previous: zod.string().nullish(),
+  results: zod.array(
+    zod.object({
+      id: zod.number(),
+      slug: zod.string(),
+      name: zod.string(),
+      released: zod.string().nullish(),
+      tba: zod.boolean(),
+      backgroundImage: zod.string().nullish(),
+      rating: zod.number(),
+      ratingTop: zod.number(),
+      ratingsCount: zod.number(),
+      metacritic: zod.number().nullish(),
+      playtime: zod.number().nullish(),
+      genres: zod.array(
+        zod.object({
+          id: zod.number(),
+          name: zod.string(),
+          slug: zod.string(),
+        }),
+      ),
+      platforms: zod.array(
+        zod.object({
+          platform: zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+        }),
+      ),
+      parentPlatforms: zod.array(
+        zod.object({
+          platform: zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+        }),
+      ),
+      shortScreenshots: zod
+        .array(
+          zod.object({
+            id: zod.number(),
+            image: zod.string(),
+          }),
+        )
+        .optional(),
+      esrbRating: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
+});
+
+/**
+ * @summary Newly released games
+ */
+export const getNewReleasesQueryPageSizeMax = 40;
+
+export const GetNewReleasesQueryParams = zod.object({
+  pageSize: zod.coerce
+    .number()
+    .min(1)
+    .max(getNewReleasesQueryPageSizeMax)
+    .optional(),
+});
+
+export const GetNewReleasesResponse = zod.object({
+  count: zod.number(),
+  next: zod.string().nullish(),
+  previous: zod.string().nullish(),
+  results: zod.array(
+    zod.object({
+      id: zod.number(),
+      slug: zod.string(),
+      name: zod.string(),
+      released: zod.string().nullish(),
+      tba: zod.boolean(),
+      backgroundImage: zod.string().nullish(),
+      rating: zod.number(),
+      ratingTop: zod.number(),
+      ratingsCount: zod.number(),
+      metacritic: zod.number().nullish(),
+      playtime: zod.number().nullish(),
+      genres: zod.array(
+        zod.object({
+          id: zod.number(),
+          name: zod.string(),
+          slug: zod.string(),
+        }),
+      ),
+      platforms: zod.array(
+        zod.object({
+          platform: zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+        }),
+      ),
+      parentPlatforms: zod.array(
+        zod.object({
+          platform: zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+        }),
+      ),
+      shortScreenshots: zod
+        .array(
+          zod.object({
+            id: zod.number(),
+            image: zod.string(),
+          }),
+        )
+        .optional(),
+      esrbRating: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
+});
+
+/**
+ * @summary Top rated games of the current year
+ */
+export const getTopRatedGamesQueryPageSizeMax = 40;
+
+export const GetTopRatedGamesQueryParams = zod.object({
+  pageSize: zod.coerce
+    .number()
+    .min(1)
+    .max(getTopRatedGamesQueryPageSizeMax)
+    .optional(),
+});
+
+export const GetTopRatedGamesResponse = zod.object({
+  count: zod.number(),
+  next: zod.string().nullish(),
+  previous: zod.string().nullish(),
+  results: zod.array(
+    zod.object({
+      id: zod.number(),
+      slug: zod.string(),
+      name: zod.string(),
+      released: zod.string().nullish(),
+      tba: zod.boolean(),
+      backgroundImage: zod.string().nullish(),
+      rating: zod.number(),
+      ratingTop: zod.number(),
+      ratingsCount: zod.number(),
+      metacritic: zod.number().nullish(),
+      playtime: zod.number().nullish(),
+      genres: zod.array(
+        zod.object({
+          id: zod.number(),
+          name: zod.string(),
+          slug: zod.string(),
+        }),
+      ),
+      platforms: zod.array(
+        zod.object({
+          platform: zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+        }),
+      ),
+      parentPlatforms: zod.array(
+        zod.object({
+          platform: zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+        }),
+      ),
+      shortScreenshots: zod
+        .array(
+          zod.object({
+            id: zod.number(),
+            image: zod.string(),
+          }),
+        )
+        .optional(),
+      esrbRating: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
+});
+
+/**
+ * @summary Upcoming game releases
+ */
+export const getUpcomingGamesQueryPageSizeMax = 40;
+
+export const GetUpcomingGamesQueryParams = zod.object({
+  pageSize: zod.coerce
+    .number()
+    .min(1)
+    .max(getUpcomingGamesQueryPageSizeMax)
+    .optional(),
+});
+
+export const GetUpcomingGamesResponse = zod.object({
+  count: zod.number(),
+  next: zod.string().nullish(),
+  previous: zod.string().nullish(),
+  results: zod.array(
+    zod.object({
+      id: zod.number(),
+      slug: zod.string(),
+      name: zod.string(),
+      released: zod.string().nullish(),
+      tba: zod.boolean(),
+      backgroundImage: zod.string().nullish(),
+      rating: zod.number(),
+      ratingTop: zod.number(),
+      ratingsCount: zod.number(),
+      metacritic: zod.number().nullish(),
+      playtime: zod.number().nullish(),
+      genres: zod.array(
+        zod.object({
+          id: zod.number(),
+          name: zod.string(),
+          slug: zod.string(),
+        }),
+      ),
+      platforms: zod.array(
+        zod.object({
+          platform: zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+        }),
+      ),
+      parentPlatforms: zod.array(
+        zod.object({
+          platform: zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+        }),
+      ),
+      shortScreenshots: zod
+        .array(
+          zod.object({
+            id: zod.number(),
+            image: zod.string(),
+          }),
+        )
+        .optional(),
+      esrbRating: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
+});
+
+/**
+ * @summary Full game detail page
+ */
+export const GetGameDetailParams = zod.object({
+  slug: zod.coerce.string(),
+});
+
+export const GetGameDetailResponse = zod.object({
+  id: zod.number(),
+  slug: zod.string(),
+  name: zod.string(),
+  nameOriginal: zod.string().nullish(),
+  description: zod.string(),
+  descriptionRaw: zod.string(),
+  released: zod.string().nullish(),
+  tba: zod.boolean(),
+  backgroundImage: zod.string().nullish(),
+  backgroundImageAdditional: zod.string().nullish(),
+  website: zod.string().nullish(),
+  rating: zod.number(),
+  ratingTop: zod.number(),
+  ratingsCount: zod.number(),
+  metacritic: zod.number().nullish(),
+  metacriticUrl: zod.string().nullish(),
+  redditUrl: zod.string().nullish(),
+  playtime: zod.number().nullish(),
+  screenshotsCount: zod.number(),
+  moviesCount: zod.number(),
+  achievementsCount: zod.number(),
+  additionsCount: zod.number(),
+  gameSeriesCount: zod.number(),
+  developers: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      slug: zod.string(),
+    }),
+  ),
+  publishers: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      slug: zod.string(),
+    }),
+  ),
+  genres: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      slug: zod.string(),
+    }),
+  ),
+  tags: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      slug: zod.string(),
+    }),
+  ),
+  platforms: zod.array(
+    zod.object({
+      platform: zod.object({
+        id: zod.number(),
+        name: zod.string(),
+        slug: zod.string(),
+      }),
+    }),
+  ),
+  parentPlatforms: zod.array(
+    zod.object({
+      platform: zod.object({
+        id: zod.number(),
+        name: zod.string(),
+        slug: zod.string(),
+      }),
+    }),
+  ),
+  stores: zod.array(
+    zod.object({
+      id: zod.number(),
+      url: zod.string().nullish(),
+      store: zod.object({
+        id: zod.number(),
+        name: zod.string(),
+        slug: zod.string(),
+      }),
+    }),
+  ),
+  esrbRating: zod
+    .union([
+      zod.object({
+        id: zod.number(),
+        name: zod.string(),
+        slug: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional(),
+  systemRequirements: zod.array(
+    zod.object({
+      platform: zod.string(),
+      minimum: zod.string().nullish(),
+      recommended: zod.string().nullish(),
+    }),
+  ),
+});
+
+/**
+ * @summary Screenshots for a game
+ */
+export const GetGameScreenshotsParams = zod.object({
+  slug: zod.coerce.string(),
+});
+
+export const GetGameScreenshotsResponse = zod.object({
+  count: zod.number(),
+  results: zod.array(
+    zod.object({
+      id: zod.number(),
+      image: zod.string(),
+      width: zod.number().nullish(),
+      height: zod.number().nullish(),
+    }),
+  ),
+});
+
+/**
+ * @summary DLC and expansions for a game
+ */
+export const GetGameDlcsParams = zod.object({
+  slug: zod.coerce.string(),
+});
+
+export const GetGameDlcsResponse = zod.object({
+  count: zod.number(),
+  results: zod.array(
+    zod.object({
+      id: zod.number(),
+      slug: zod.string(),
+      name: zod.string(),
+      released: zod.string().nullish(),
+      backgroundImage: zod.string().nullish(),
+      rating: zod.number(),
+      metacritic: zod.number().nullish(),
+    }),
+  ),
+});
+
+/**
+ * @summary Other games in the same series
+ */
+export const GetGameSeriesParams = zod.object({
+  slug: zod.coerce.string(),
+});
+
+export const GetGameSeriesResponse = zod.object({
+  count: zod.number(),
+  next: zod.string().nullish(),
+  previous: zod.string().nullish(),
+  results: zod.array(
+    zod.object({
+      id: zod.number(),
+      slug: zod.string(),
+      name: zod.string(),
+      released: zod.string().nullish(),
+      tba: zod.boolean(),
+      backgroundImage: zod.string().nullish(),
+      rating: zod.number(),
+      ratingTop: zod.number(),
+      ratingsCount: zod.number(),
+      metacritic: zod.number().nullish(),
+      playtime: zod.number().nullish(),
+      genres: zod.array(
+        zod.object({
+          id: zod.number(),
+          name: zod.string(),
+          slug: zod.string(),
+        }),
+      ),
+      platforms: zod.array(
+        zod.object({
+          platform: zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+        }),
+      ),
+      parentPlatforms: zod.array(
+        zod.object({
+          platform: zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+        }),
+      ),
+      shortScreenshots: zod
+        .array(
+          zod.object({
+            id: zod.number(),
+            image: zod.string(),
+          }),
+        )
+        .optional(),
+      esrbRating: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            slug: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
+});
+
+/**
+ * @summary All game genres
+ */
+export const ListGenresResponse = zod.object({
+  results: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      slug: zod.string(),
+      gamesCount: zod.number().optional(),
+      imageBackground: zod.string().nullish(),
+    }),
+  ),
+});
+
+/**
+ * @summary All parent platforms
+ */
+export const ListPlatformsResponse = zod.object({
+  results: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      slug: zod.string(),
+      gamesCount: zod.number().optional(),
+      imageBackground: zod.string().nullish(),
+    }),
+  ),
+});
+
+/**
+ * @summary Latest gaming news headlines
+ */
+export const getGamingNewsQueryPageSizeMax = 50;
+
+export const GetGamingNewsQueryParams = zod.object({
+  pageSize: zod.coerce
+    .number()
+    .min(1)
+    .max(getGamingNewsQueryPageSizeMax)
+    .optional(),
+});
+
+export const GetGamingNewsResponse = zod.object({
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      title: zod.string(),
+      link: zod.string(),
+      description: zod.string(),
+      source: zod.string(),
+      publishedAt: zod.string(),
+      image: zod.string().nullish(),
+    }),
+  ),
+});

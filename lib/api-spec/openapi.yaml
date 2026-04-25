@@ -10,6 +10,12 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: games
+    description: Game catalog (RAWG-backed)
+  - name: meta
+    description: Genres, platforms, etc.
+  - name: news
+    description: Gaming news feed
 paths:
   /healthz:
     get:
@@ -24,13 +30,526 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /games:
+    get:
+      operationId: listGames
+      tags: [games]
+      summary: Search and filter games
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: genres
+          description: Comma-separated genre slugs
+          schema: { type: string }
+        - in: query
+          name: platforms
+          description: Comma-separated parent platform ids (1=PC, 2=PlayStation, 3=Xbox, 7=Nintendo, etc.)
+          schema: { type: string }
+        - in: query
+          name: dates
+          description: "Date range yyyy-mm-dd,yyyy-mm-dd"
+          schema: { type: string }
+        - in: query
+          name: ordering
+          description: "RAWG ordering, e.g. -released, -rating, -metacritic, -added, name"
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: pageSize
+          schema: { type: integer, minimum: 1, maximum: 40 }
+      responses:
+        "200":
+          description: List of games
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameList"
+
+  /games/trending:
+    get:
+      operationId: getTrendingGames
+      tags: [games]
+      summary: Trending games right now
+      parameters:
+        - in: query
+          name: pageSize
+          schema: { type: integer, minimum: 1, maximum: 40 }
+      responses:
+        "200":
+          description: Trending games
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameList"
+
+  /games/new-releases:
+    get:
+      operationId: getNewReleases
+      tags: [games]
+      summary: Newly released games
+      parameters:
+        - in: query
+          name: pageSize
+          schema: { type: integer, minimum: 1, maximum: 40 }
+      responses:
+        "200":
+          description: New releases
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameList"
+
+  /games/top-rated:
+    get:
+      operationId: getTopRatedGames
+      tags: [games]
+      summary: Top rated games of the current year
+      parameters:
+        - in: query
+          name: pageSize
+          schema: { type: integer, minimum: 1, maximum: 40 }
+      responses:
+        "200":
+          description: Top rated games
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameList"
+
+  /games/upcoming:
+    get:
+      operationId: getUpcomingGames
+      tags: [games]
+      summary: Upcoming game releases
+      parameters:
+        - in: query
+          name: pageSize
+          schema: { type: integer, minimum: 1, maximum: 40 }
+      responses:
+        "200":
+          description: Upcoming games
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameList"
+
+  /games/{slug}:
+    get:
+      operationId: getGameDetail
+      tags: [games]
+      summary: Full game detail page
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Game detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /games/{slug}/screenshots:
+    get:
+      operationId: getGameScreenshots
+      tags: [games]
+      summary: Screenshots for a game
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Screenshots
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScreenshotList"
+
+  /games/{slug}/dlcs:
+    get:
+      operationId: getGameDlcs
+      tags: [games]
+      summary: DLC and expansions for a game
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: DLC list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DlcList"
+
+  /games/{slug}/series:
+    get:
+      operationId: getGameSeries
+      tags: [games]
+      summary: Other games in the same series
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Related series games
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameList"
+
+  /genres:
+    get:
+      operationId: listGenres
+      tags: [meta]
+      summary: All game genres
+      responses:
+        "200":
+          description: Genres
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenreList"
+
+  /platforms:
+    get:
+      operationId: listPlatforms
+      tags: [meta]
+      summary: All parent platforms
+      responses:
+        "200":
+          description: Platforms
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformList"
+
+  /news:
+    get:
+      operationId: getGamingNews
+      tags: [news]
+      summary: Latest gaming news headlines
+      parameters:
+        - in: query
+          name: pageSize
+          schema: { type: integer, minimum: 1, maximum: 50 }
+      responses:
+        "200":
+          description: News items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsList"
+
 components:
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
+      required: [status]
 
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+      required: [error]
+
+    NamedRef:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        slug: { type: string }
+      required: [id, name, slug]
+
+    PlatformRef:
+      type: object
+      properties:
+        platform:
+          $ref: "#/components/schemas/NamedRef"
+      required: [platform]
+
+    GameSummary:
+      type: object
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        name: { type: string }
+        released: { type: ["string", "null"] }
+        tba: { type: boolean }
+        backgroundImage: { type: ["string", "null"] }
+        rating: { type: number }
+        ratingTop: { type: integer }
+        ratingsCount: { type: integer }
+        metacritic: { type: ["integer", "null"] }
+        playtime: { type: ["integer", "null"] }
+        genres:
+          type: array
+          items:
+            $ref: "#/components/schemas/NamedRef"
+        platforms:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformRef"
+        parentPlatforms:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformRef"
+        shortScreenshots:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              image: { type: string }
+            required: [id, image]
+        esrbRating:
+          anyOf:
+            - $ref: "#/components/schemas/NamedRef"
+            - type: "null"
+      required:
+        [
+          id,
+          slug,
+          name,
+          tba,
+          rating,
+          ratingTop,
+          ratingsCount,
+          genres,
+          platforms,
+          parentPlatforms,
+        ]
+
+    GameList:
+      type: object
+      properties:
+        count: { type: integer }
+        next: { type: ["string", "null"] }
+        previous: { type: ["string", "null"] }
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/GameSummary"
+      required: [count, results]
+
+    SystemRequirements:
+      type: object
+      properties:
+        platform: { type: string }
+        minimum: { type: ["string", "null"] }
+        recommended: { type: ["string", "null"] }
+      required: [platform]
+
+    GameDetail:
+      type: object
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        name: { type: string }
+        nameOriginal: { type: ["string", "null"] }
+        description: { type: string }
+        descriptionRaw: { type: string }
+        released: { type: ["string", "null"] }
+        tba: { type: boolean }
+        backgroundImage: { type: ["string", "null"] }
+        backgroundImageAdditional: { type: ["string", "null"] }
+        website: { type: ["string", "null"] }
+        rating: { type: number }
+        ratingTop: { type: integer }
+        ratingsCount: { type: integer }
+        metacritic: { type: ["integer", "null"] }
+        metacriticUrl: { type: ["string", "null"] }
+        redditUrl: { type: ["string", "null"] }
+        playtime: { type: ["integer", "null"] }
+        screenshotsCount: { type: integer }
+        moviesCount: { type: integer }
+        achievementsCount: { type: integer }
+        additionsCount: { type: integer }
+        gameSeriesCount: { type: integer }
+        developers:
+          type: array
+          items:
+            $ref: "#/components/schemas/NamedRef"
+        publishers:
+          type: array
+          items:
+            $ref: "#/components/schemas/NamedRef"
+        genres:
+          type: array
+          items:
+            $ref: "#/components/schemas/NamedRef"
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/NamedRef"
+        platforms:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformRef"
+        parentPlatforms:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformRef"
+        stores:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              url: { type: ["string", "null"] }
+              store:
+                $ref: "#/components/schemas/NamedRef"
+            required: [id, store]
+        esrbRating:
+          anyOf:
+            - $ref: "#/components/schemas/NamedRef"
+            - type: "null"
+        systemRequirements:
+          type: array
+          items:
+            $ref: "#/components/schemas/SystemRequirements"
+      required:
+        [
+          id,
+          slug,
+          name,
+          description,
+          descriptionRaw,
+          tba,
+          rating,
+          ratingTop,
+          ratingsCount,
+          screenshotsCount,
+          moviesCount,
+          achievementsCount,
+          additionsCount,
+          gameSeriesCount,
+          developers,
+          publishers,
+          genres,
+          tags,
+          platforms,
+          parentPlatforms,
+          stores,
+          systemRequirements,
+        ]
+
+    Screenshot:
+      type: object
+      properties:
+        id: { type: integer }
+        image: { type: string }
+        width: { type: ["integer", "null"] }
+        height: { type: ["integer", "null"] }
+      required: [id, image]
+
+    ScreenshotList:
+      type: object
+      properties:
+        count: { type: integer }
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/Screenshot"
+      required: [count, results]
+
+    DlcItem:
+      type: object
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        name: { type: string }
+        released: { type: ["string", "null"] }
+        backgroundImage: { type: ["string", "null"] }
+        rating: { type: number }
+        metacritic: { type: ["integer", "null"] }
+      required: [id, slug, name, rating]
+
+    DlcList:
+      type: object
+      properties:
+        count: { type: integer }
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/DlcItem"
+      required: [count, results]
+
+    Genre:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        slug: { type: string }
+        gamesCount: { type: integer }
+        imageBackground: { type: ["string", "null"] }
+      required: [id, name, slug]
+
+    GenreList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/Genre"
+      required: [results]
+
+    Platform:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        slug: { type: string }
+        gamesCount: { type: integer }
+        imageBackground: { type: ["string", "null"] }
+      required: [id, name, slug]
+
+    PlatformList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/Platform"
+      required: [results]
+
+    NewsItem:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        link: { type: string }
+        description: { type: string }
+        source: { type: string }
+        publishedAt: { type: string }
+        image: { type: ["string", "null"] }
+      required: [id, title, link, description, source, publishedAt]
+
+    NewsList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewsItem"
+      required: [items]
