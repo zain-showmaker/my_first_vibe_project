@@ -1,0 +1,62 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "n9jBMbXWU45wMQ-oaYZ4Z"
+uri = "file://artifacts/gameverse/public/images/covers/elden-ring.png"
+type = "image"
+title = "Elden Ring key art"
+
+[[generated]]
+id = "M1eQx0kHZxEtvvsEUOEUq"
+uri = "file://artifacts/gameverse/public/images/covers/bloodborne.png"
+type = "image"
+title = "Bloodborne key art"
+
+[[generated]]
+id = "1yn6ODam2wYhgo2ryFfjO"
+uri = "file://artifacts/gameverse/public/images/covers/witcher3.png"
+type = "image"
+title = "Witcher 3 key art"
+
+[[generated]]
+id = "Si6bingi67dPnm2-mNXxW"
+uri = "file://artifacts/gameverse/public/images/covers/rdr2.png"
+type = "image"
+title = "Red Dead 2 key art"
+
+[[generated]]
+id = "2872Wqx3wF874t7CJSQv5"
+uri = "file://artifacts/gameverse/public/images/covers/hollow-knight.png"
+type = "image"
+title = "Hollow Knight key art"
+
+[[generated]]
+id = "x2dvdzgatibPfH58OgBxy"
+uri = "file://artifacts/gameverse/public/images/covers/cyberpunk.png"
+type = "image"
+title = "Cyberpunk 2077 key art"
+
+[[generated]]
+id = "tDBo0XeObex2Cmqy0ssdG"
+uri = "file://artifacts/gameverse/public/images/heroes/elden-ring.png"
+type = "image"
+title = "Elden Ring hero background"
+
+[[generated]]
+id = "b1087zJundc7Nt35KXDjs"
+uri = "file://artifacts/gameverse/public/images/heroes/bloodborne.png"
+type = "image"
+title = "Bloodborne hero background"
+
+[[generated]]
+id = "f6wB-IJdjM3Sp8jH-SQo3"
+uri = "file://artifacts/gameverse/public/images/heroes/witcher3.png"
+type = "image"
+title = "Witcher 3 hero background"
+
+[[generated]]
+id = "tVmHb180W3Wx-Mxt1-TPq"
+uri = "file://artifacts/gameverse/public/images/heroes/rdr2.png"
+type = "image"
+title = "Red Dead 2 hero background"

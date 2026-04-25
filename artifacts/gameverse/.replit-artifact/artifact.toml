@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "GameVerse Wiki"
+version = "1.0.0"
+id = "artifacts/gameverse"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21804
+
+[services.development]
+run = "pnpm --filter @workspace/gameverse run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/gameverse", "run", "build" ]
+publicDir = "artifacts/gameverse/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21804"
+BASE_PATH = "/"
